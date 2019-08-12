@@ -12,7 +12,10 @@ $ make
 To start the release in the foreground:
 
 ``` bash
-$ ./_rel/websocket_example/bin/websocket_example console
+erl -pa /xxx/xxx/mmchat/ebin/ -pa /xxx/xxx/mmchat/deps/*/ebin
+1> application:ensure_all_started(mmchat).
+{ok,[ranch,crypto,cowlib,cowboy,mmchat]}
+2> 
 ```
 
-Then point your browser at [http://localhost:8080](http://localhost:8080).
+Then point your browser at [http://serverip:9999](http://localhost:9999).
