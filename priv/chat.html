@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, maximum-scale=1.0, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>世界很大，请慢慢来</title>
+    <link rel="stylesheet" type="text/css" href="font_Icon/iconfont.css">
+    <link rel="stylesheet" type="text/css" href="css/chat.css">
+<script>
+    //生成表情
+    window.onload = function() {
+        var flist = new Array("angel","angry","astonished-1","astonished","confused","cool-1","cool","cry-1","cry","devil","dizzy","expressionless","flushed","happy-1","happy-2","happy","injury","in-love","joy","kiss-1","kiss-2","kiss","mask","mute","neutral","sad-1","sad","scared-1","scared","secret","shocked","sick","sleeping","smile-1","smile","smiling-1","smiling","smirking","surprised","sweat","thinking","tired","tongue-1","tongue-2","tongue","unamused","vomiting-1","vomiting","wink","zombie");
+        var face = document.getElementById('face');
+        for(var i = 0; i < flist.length; i++) {
+            var a = document.createElement("a");
+            a.href = "javascript:send_my(this);";
+            a.innerHTML = '<img class="emojiSvg" src="emoji-png/051-' + flist[i] + '.png" alt="" />';
+            face.appendChild(a);
+        };
+    }
+
+</script>
+
+</head>
+<body>
+<div id="chatContainer" class="chatContainer">
+<!-- <div id="mytuxiang" style="display:none;"></div> -->
+    <div id="chatBox" class="chatBox" ref="chatBox">
+        <div id="chatBox-head" class="chatBox-head">
+            <div id="chatBox-head-one" class="chatBox-head-one">
+                <div id="mtx" class="my_touxiang"><img style="width:3em;hight:3em;" src="./img/tx005.jpg" alt="头像"/></div>
+                慢慢
+                <div class="chat-close" onclick="window.location.href='/index.html';" style="margin: 10px 10px 0 0;font-size: 14px">关闭</div>
+            </div>
+            <div id="chatBox-head-two" class="chatBox-head-two">
+                <div id="chat-return" class="chat-return" onclick="javascript:return_list();">返回</div>
+                <div class="chat-people">
+                    <div id="ChatInfoHead" class="ChatInfoHead">
+                        <img src="" alt="头像"/>
+                    </div>
+                    <div id="ChatInfoName" class="ChatInfoName">这是用户的名字，看看名字到底能有多长</div>
+                </div>
+                <div class="chat-close" onclick="window.location.href='/index.html';" >关闭</div>
+            </div>
+        </div>
+        <div id="chatBox-info" class="chatBox-info">
+            <div id="mmgp" class="chatBox-list" ref="chatBoxlist">
+            </div>
+            <div id="chatBox-kuang" class="chatBox-kuang" ref="chatBoxkuang">
+                <div id="mmchat" class="chatBox-content">
+                </div>
+                <div id="face" class="biaoqing" ></div>
+                <div class="chatBox-send">
+                    <div id="div-textarea" class="div-textarea" contenteditable="true"></div>
+                    <div>
+                        <button id="chat-fasong" class="btn-default-styles" onclick="javascript:send_txt();"><i class="iconfont icon-fasong"></i>
+                        </button>
+                        <button id="chat-biaoqing" class="btn-default-styles" onclick="javascript:setBiaoqing();">
+                            <i class="iconfont icon-biaoqing"></i>
+                        </button>
+                        <label id="chat-tuxiang" title="发送图片" for="inputImage" class="btn-default-styles">
+                            <input type="file" onchange="selectImg(this)" accept="image/jpg,image/jpeg,image/png"
+                                   name="file" id="inputImage" class="hidden">
+                            <i class="iconfont icon-tuxiang"></i>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="./js/mymm.js"></script>
+
+</body>
+</html>

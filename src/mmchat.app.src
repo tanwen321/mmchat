@@ -1,0 +1,15 @@
+%% Feel free to use, reuse and abuse the code in this file.
+
+{application, mmchat, [
+	{description, "Cowboy mmchat web server."},
+	{vsn, "1.008"},
+	{modules, []},
+	{registered, [mmchat_sup]},
+	{applications, [
+		kernel,
+		stdlib,
+		cowboy
+	]},
+	{mod, {mmchat_app, []}},
+	{env, []}
+]}.
