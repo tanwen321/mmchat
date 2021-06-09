@@ -34,7 +34,7 @@ $ ./rebar compile
 To start the release in the foreground:
 
 ``` bash
-erl -pa /xxx/xxx/mmchat/ebin/ -pa /xxx/xxx/mmchat/deps/*/ebin
+erl -pa ebin/ -pa deps/*/ebin
 1> application:ensure_all_started(mmchat).
 {ok,[ranch,crypto,cowlib,cowboy,mmchat]}
 2> 
