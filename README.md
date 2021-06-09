@@ -27,7 +27,8 @@ To try this example, you need GNU `make` and `git` in your PATH.
 To build the example, run the following command:
 
 ``` bash
-$ make
+$ ./rebar get-deps
+$ ./rebar compile
 ```
 
 To start the release in the foreground:
