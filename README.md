@@ -63,7 +63,7 @@ ok
 ##增加用户2
 6> mmchat_data:add_user("zhangsan", "test123").
 ok
-##添加用户到群众
+##添加用户到群组
 7> mmchat_data:adduser_to_group("maomao", "钓鱼的人").
 {atomic,ok}
 8> mmchat_data:adduser_to_group("zhangsan", "钓鱼的人").
