@@ -88,8 +88,8 @@ stop() ->
 
 add_user(User, Passwd, Group) when is_list(User), is_list(Passwd) ->  
     UserId = mnesia:dirty_update_counter(user_seq, user, 1),  
-    U_bin = erlang:list_to_binary(User),
-    U_pass = erlang:list_to_binary(Passwd),
+    U_bin = unicode:characters_to_binary(User),
+    U_pass = unicode:characters_to_binary(Passwd),
     P_bin = erlang:md5(<<U_bin/binary, U_pass/binary>>),
     User2 = case do(qlc:q([X || X <- mnesia:table(ugroup), X#ugroup.gname == Group])) of
         [] ->
@@ -105,7 +105,7 @@ add_user(User, Passwd, Group) when is_list(User), is_list(Passwd) ->
     ok.
 
 add_user(User, Passwd) when is_list(User), is_list(Passwd) -> 
-    add_user(erlang:list_to_binary(User), erlang:list_to_binary(Passwd));
+    add_user(unicode:characters_to_binary(User), unicode:characters_to_binary(Passwd));
 add_user(User, Passwd) when is_binary(User), is_binary(Passwd) -> 
     UserId = mnesia:dirty_update_counter(user_seq, user, 1), 
     P_bin = erlang:md5(<<User/binary, Passwd/binary>>),
@@ -143,7 +143,7 @@ get_cookie(Cookie) ->
     end.
 
 check_passwd(User, Passwd, Cook, Ip) when is_list(User), is_list(Passwd) ->
-    check_passwd(erlang:list_to_binary(User), is_list(Passwd), Cook, Ip);
+    check_passwd(unicode:characters_to_binary(User), is_list(Passwd), Cook, Ip);
 check_passwd(User, Passwd, Cook, Ip) when is_binary(User), is_binary(Passwd) ->
     ?LOG({User, Passwd, Cook, Ip}),
     Ulist = erlang:binary_to_list(User),
@@ -215,10 +215,10 @@ init_data(Pid, Uid) ->
             ets:insert(muinfo, Uinfo#muinfo{mpid=Pid}),
             add_groupuser(Muser#muser.group, Pid),
             S_info = {[{<<"id">>, erlang:integer_to_binary(Uid)},
-              {<<"na">>, erlang:list_to_binary(Muser#muser.mname)},
-              {<<"im">>, erlang:list_to_binary(Muser#muser.uimage)},
+              {<<"na">>, unicode:characters_to_binary(Muser#muser.mname)},
+              {<<"im">>, unicode:characters_to_binary(Muser#muser.uimage)},
               {<<"ti">>, get_time1()},
-              {<<"wo">>, erlang:list_to_binary(Muser#muser.mword)}]},
+              {<<"wo">>, unicode:characters_to_binary(Muser#muser.mword)}]},
             send_user_init(Pid, Muser#muser.group, Muser#muser.friend, S_info);
         false ->
             []
@@ -254,6 +254,26 @@ adduser_to_group(User, Gname) ->
             ok
     end.
 
+add_friends(User1, User2) ->
+    case do(qlc:q([X || X <- mnesia:table(muser), X#muser.mname == User1])) of
+        [Muser1] ->
+            case do(qlc:q([X || X <- mnesia:table(muser), X#muser.mname == User2])) of
+                [Muser2] ->
+                    Nl1 = [Muser2#muser.mid|Muser1#muser.friend],
+                    Nl2 = [Muser1#muser.mid|Muser2#muser.friend],
+                    New1 = Muser1#muser{friend = Nl1},
+                    New2 = Muser2#muser{friend = Nl2},
+                    F = fun() ->  
+                        mnesia:write(New1),
+                        mnesia:write(New2) 
+                    end,  
+                    mnesia:transaction(F);
+                [] ->
+                    ok
+            end;
+        [] ->
+            ok
+    end.
 
 send_user_init(Pid, Glist, Flist, S_info) ->
     G_info = group_info(Glist, []),
@@ -267,10 +287,10 @@ group_info([H|T], L) ->
     case mnesia:dirty_read(ugroup, H) of
         [Ugroup] ->
             M = {[{<<"id">>, erlang:integer_to_binary(H)},
-                  {<<"na">>, erlang:list_to_binary(Ugroup#ugroup.gname)},
-                  {<<"im">>, erlang:list_to_binary(Ugroup#ugroup.gimage)},
+                  {<<"na">>, unicode:characters_to_binary(Ugroup#ugroup.gname)},
+                  {<<"im">>, unicode:characters_to_binary(Ugroup#ugroup.gimage)},
                   {<<"ti">>, get_time1()},
-                  {<<"wo">>, erlang:list_to_binary(Ugroup#ugroup.gword)}]},
+                  {<<"wo">>, unicode:characters_to_binary(Ugroup#ugroup.gword)}]},
             group_info(T, [M|L]);
         [] ->
             group_info(T, L)
@@ -290,10 +310,10 @@ friend_info([H|T], S_info, L) ->
 					case mnesia:dirty_read(muser, H) of
 						[Muser] ->
 							M = {[{<<"id">>, erlang:integer_to_binary(H)},
-								  {<<"na">>, erlang:list_to_binary(Muser#muser.mname)},
-								  {<<"im">>, erlang:list_to_binary(Muser#muser.uimage)},
+								  {<<"na">>, unicode:characters_to_binary(Muser#muser.mname)},
+								  {<<"im">>, unicode:characters_to_binary(Muser#muser.uimage)},
                                   {<<"ti">>, get_time1()},
-								  {<<"wo">>, erlang:list_to_binary(Muser#muser.mword)}]},
+								  {<<"wo">>, unicode:characters_to_binary(Muser#muser.mword)}]},
 								   friend_info(T, S_info, [M|L]);
 						[] ->
 							friend_info(T, S_info, L)
@@ -307,7 +327,7 @@ send_group_msg(Pid, Uid, Msg) ->
     case mmchat_lib:stoken(Msg, $@) of
         {Gid, "3", Msg2} ->
             Id =erlang:list_to_integer(Gid),
-            Bin = erlang:list_to_binary(get_imagename(Msg2)),
+            Bin = unicode:characters_to_binary(get_imagename(Msg2)),
             ?LOG(Bin),
             case mnesia:dirty_read(muser, Id) of
                 [_Muser] ->
@@ -332,7 +352,7 @@ send_group_msg(Pid, Uid, Msg) ->
 
 send_group_msg(Id, Pid, Uid, Type, Bin) ->
     [Muser] = mnesia:dirty_read(muser, Uid),
-    M = jiffy:encode({[{<<"id">>, erlang:integer_to_binary(Id)}, {<<"fn">>, erlang:list_to_binary(Muser#muser.mname)}, {<<"fi">>, erlang:list_to_binary(Muser#muser.uimage)}, {<<"ty">>, erlang:list_to_binary(Type)}, {<<"ti">>, get_time1()}, {<<"da">>, Bin}]}),
+    M = jiffy:encode({[{<<"id">>, erlang:integer_to_binary(Id)}, {<<"fn">>, unicode:characters_to_binary(Muser#muser.mname)}, {<<"fi">>, unicode:characters_to_binary(Muser#muser.uimage)}, {<<"ty">>, unicode:characters_to_binary(Type)}, {<<"ti">>, get_time1()}, {<<"da">>, Bin}]}),
     case ets:lookup(mgroup, Id) of
         [Mgroup] ->
             [ X ! M || X<- Mgroup#mgroup.gulist, X =/= Pid],
@@ -343,7 +363,7 @@ send_group_msg(Id, Pid, Uid, Type, Bin) ->
 
 send_friend_msg(Id, Uid, Type, Bin) ->
     [Muser] = mnesia:dirty_read(muser, Uid),
-    M = jiffy:encode({[{<<"id">>, erlang:integer_to_binary(Uid)}, {<<"fn">>, erlang:list_to_binary(Muser#muser.mname)}, {<<"fi">>, erlang:list_to_binary(Muser#muser.uimage)}, {<<"ty">>, erlang:list_to_binary(Type)}, {<<"ti">>, get_time1()}, {<<"da">>, Bin}]}),
+    M = jiffy:encode({[{<<"id">>, erlang:integer_to_binary(Uid)}, {<<"fn">>, unicode:characters_to_binary(Muser#muser.mname)}, {<<"fi">>, unicode:characters_to_binary(Muser#muser.uimage)}, {<<"ty">>, unicode:characters_to_binary(Type)}, {<<"ti">>, get_time1()}, {<<"da">>, Bin}]}),
     case ets:lookup(muinfo, Id) of
         [Muinfo] ->
             case Muinfo#muinfo.mpid =/= undefined andalso erlang:is_process_alive(Muinfo#muinfo.mpid) of
@@ -432,7 +452,7 @@ get_image() ->
 get_time1() ->
     {{Y, M, D},{H,Mi,_}} = calendar:now_to_local_time(os:timestamp()),
     T = lists:flatten(io_lib:format("~w-~2..0w-~2..0w-~w-~2..0w",[Y, M, D, H, Mi])),
-    erlang:list_to_binary(T).
+    unicode:characters_to_binary(T).
 
 get_time2() ->
     {{_,M,D},{H,Mi,_}} = calendar:now_to_local_time(os:timestamp()),
@@ -441,7 +461,7 @@ get_time2() ->
     true ->
         lists:flatten(io_lib:format("~2..0w-~2..0w, ~w:~2..0w AM",[M, D, H, Mi]))
     end,
-    erlang:list_to_binary(T).
+    unicode:characters_to_binary(T).
 
 get_online_user() ->
     L  = ets:tab2list(muinfo),
@@ -451,10 +471,10 @@ make_res([], L) ->
     jiffy:encode({[{<<"res">>,[{L}]}]});
 make_res([#muinfo{mid=Id}|T], L) ->
     [Muser] = mnesia:dirty_read(muser, Id),
-    make_res(T, [{<<"name">>, erlang:list_to_binary(Muser#muser.mname)}|L]).
+    make_res(T, [{<<"name">>, unicode:characters_to_binary(Muser#muser.mname)}|L]).
 
 get_imagename(Msg2) when erlang:is_list(Msg2)->
-    get_imagename(erlang:list_to_binary(Msg2));
+    get_imagename(unicode:characters_to_binary(Msg2));
 get_imagename(Msg2) ->
     case ets:lookup(user_data, erlang:md5(Msg2)) of
         [] ->
