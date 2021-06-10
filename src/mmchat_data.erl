@@ -94,9 +94,9 @@ add_user(User, Passwd, Group) when is_list(User), is_list(Passwd) ->
     User2 = case do(qlc:q([X || X <- mnesia:table(ugroup), X#ugroup.gname == Group])) of
         [] ->
             Id = add_group(Group),
-            #muser{mid=UserId, mname=User, passwd=P_bin, group=[Id], createtime=os:timestamp()};
+            #muser{mid=UserId, mname=User, uimage=get_image(), passwd=P_bin, group=[Id], createtime=os:timestamp()};
         [Ugroup] ->
-            #muser{mid=UserId, mname=User, passwd=P_bin, group=[Ugroup#ugroup.gid], createtime=os:timestamp()}
+            #muser{mid=UserId, mname=User, uimage=get_image(), passwd=P_bin, group=[Ugroup#ugroup.gid], createtime=os:timestamp()}
     end,
     F = fun() ->  
         mnesia:write(User2)  
@@ -109,7 +109,7 @@ add_user(User, Passwd) when is_list(User), is_list(Passwd) ->
 add_user(User, Passwd) when is_binary(User), is_binary(Passwd) -> 
     UserId = mnesia:dirty_update_counter(user_seq, user, 1), 
     P_bin = erlang:md5(<<User/binary, Passwd/binary>>),
-    User2 = #muser{mid=UserId, mname=erlang:binary_to_list(User), passwd=P_bin, group=[1], createtime=os:timestamp()},  
+    User2 = #muser{mid=UserId, mname=erlang:binary_to_list(User), uimage=get_image(), passwd=P_bin, group=[1], createtime=os:timestamp()},  
     F = fun() ->  
         mnesia:write(User2)  
     end,  
